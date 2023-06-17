@@ -1,0 +1,25 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+@layer utilities {
+    /* Chrome, Safari and Opera */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .no-scrollbar {
+      -ms-overflow-style: none; /* IE and Edge */
+      scrollbar-width: none; /* Firefox */
+    }
+    input[type=file]::-webkit-file-upload-button {
+      visibility: hidden;
+      display: none;
+  }
+}
+@import url('https://fonts.googleapis.com/css2?family=Sen&display=swap');
+ body{
+  background-color: "#EFEFEF";
+ }
+ .swal{
+  z-index: 10000;
+ }
