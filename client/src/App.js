@@ -29,7 +29,8 @@ function App() {
           <Route path="/edit-partner" element={<E.EditPartner auth={auth}/>}/>
         </Route>
         <Route element={<PrivateRouteUser auth={auth} />}>
-          <Route path="/cart" element={<E.Cart />} />
+          <Route path="/cart" element={<E.Cart auth={auth}/>} />
+          <Route path="/edit-profile" element={<E.EditPartner auth={auth}/>}/>
         </Route>
       </Routes>
     </>

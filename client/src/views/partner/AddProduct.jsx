@@ -18,9 +18,7 @@ export default function AddProduct({auth}) {
         formData.set("image" ,dataProduct.image[0],dataProduct.image[0].name)
         formData.set("price",dataProduct?.price)
         d(addProducts(formData,auth?.token))
-        setTimeout(() => {
-            window.location.reload()
-        },1000)
+        
     }
   return (
     <>

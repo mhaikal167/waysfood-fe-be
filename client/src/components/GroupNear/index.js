@@ -9,9 +9,9 @@ const GroupNear = ({ data }) => {
       <div className="flex  items-center gap-5 mt-10">
         {data?.length ? (
           <>
-            {data?.map((item, idx) => {
+            {data?.sort((a, b) => a.id - b.id).map((item, idx) => {
               return (
-                <Link to={`/menu-list/${item.id}`}>
+                <Link to={`/menu-list/${item.fullname}`}>
                 <Card key={idx} className="p-2 border border-gray-200">
                     <img src={item.image} alt="img" className="w-[224px] h-[124px] object-cover"/>
                     <p className="font-avenir text-secondary font-bold text-lg py-2">{item.fullname}</p>

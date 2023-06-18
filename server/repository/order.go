@@ -12,8 +12,10 @@ type OrderRepository interface {
 	// GetOrderByBuyerSeller(IDB int, IDS int) (models.Order, error)
 	GetOrderByBuyerProduct(IDB int, IDP int) (models.Order, error)
 	GetOrderByBuyer(ID int) ([]models.Order, error)
-	// GetOrderById(ID int) (models.Order, error)
+	GetOrderById(ID int) (models.Order, error)
 	UpdateOrder(order models.Order) (models.Order, error)
+	DeleteOrder(Order models.Order, ID int) (models.Order, error)
+	DeleteAllOrder(IDB int) (models.Order, error)
 }
 
 func RepositoryOrder(db *gorm.DB) *repository {
@@ -40,6 +42,7 @@ func (r *repository) GetOrderByBuyerProduct(IDB int, IDP int) (models.Order, err
 	return Order, err
 }
 
+
 func (r *repository) GetOrderByBuyer(ID int) ([]models.Order, error) {
 	var Order []models.Order
 	err := r.db.Where("buyer_id = ?", ID).Preload("Buyer").Preload("Product").Preload("Seller").Find(&Order).Error
@@ -47,7 +50,26 @@ func (r *repository) GetOrderByBuyer(ID int) ([]models.Order, error) {
 	return Order, err
 }
 
+func (r *repository) GetOrderById(ID int) (models.Order, error) {
+	var Order models.Order
+	err := r.db.First(&Order, ID).Error
+
+	return Order, err
+}
+
 func (r *repository) UpdateOrder(Order models.Order) (models.Order, error) {
 	err := r.db.Save(&Order).Error
+	return Order, err
+}
+
+func (r *repository) DeleteOrder(Order models.Order, ID int) (models.Order, error) {
+	err := r.db.Delete(&Order, ID).Scan(&Order).Error
+
+	return Order, err
+}
+func (r *repository) DeleteAllOrder(ID int) (models.Order, error) {
+	var Order models.Order
+	err := r.db.Where("buyer_id = ?", ID).Delete(&Order).Error
+
 	return Order, err
 }

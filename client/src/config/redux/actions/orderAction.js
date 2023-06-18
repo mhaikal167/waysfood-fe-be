@@ -76,3 +76,52 @@ export const AddOrder = (data,token) => {
         })
     }
 }
+
+const deleteOrder = () => ({
+    type:orderTypes.DELETE_ORDER
+})
+
+const deleteOrderSuccess = (payload) => ({
+    type:orderTypes.DELETE_ORDER_SUCCESS,
+    payload:payload
+})
+
+const deleteOrderFailed = (error) => ({
+    type:orderTypes.DELETE_ORDER_FAILED,
+    payload:error,
+})
+
+export const DeleteOrder = (id,token) => {
+    return function(dispatch){
+        dispatch(deleteOrder)
+        let config = {
+            headers:{
+                Authorization: `Bearer ${token}`
+            }
+        }
+        API.delete(`/delete-order/${id}`,config)
+        .then((response) =>{
+            dispatch(deleteOrderSuccess(response.data.message))
+            const Toast = Swal.mixin({
+                toast: true,
+                position: "top-end",
+                showConfirmButton: false,
+                timer: 2000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                  toast.addEventListener("mouseenter", Swal.stopTimer);
+                  toast.addEventListener("mouseleave", Swal.resumeTimer);
+                },
+              });
+      
+              Toast.fire({
+                icon: "success",
+                title: "Order has been deleted in cart",
+              });
+
+        })
+        .catch((error) => {
+            dispatch(deleteOrderFailed(error.response.data.message))
+        })
+    }
+}

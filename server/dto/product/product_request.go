@@ -1,6 +1,7 @@
 package productdto
 
 type CreateProductRequest struct {
+	ID int `json:"id" form:"id"`
 	Title  string `json:"title" form:"title" gorm:"type: varchar(255)"`
 	Price  int64    `json:"price" form:"price"`
 	Image  string `json:"image" form:"image" gorm:"type: varchar(255)"`

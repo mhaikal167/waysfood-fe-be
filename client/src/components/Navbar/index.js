@@ -38,7 +38,9 @@ export default function Navigation() {
     setOpenR(!openR);
     setOpenL(false);
   };
-
+  useEffect(() => {
+    d(GetOrder(auth?.token))
+  },[])
  
   return (
     <div className="w-full bg-primary">
@@ -94,7 +96,7 @@ export default function Navigation() {
             ) : auth?.user?.role === "customer" ? (
               <>
                 <Menu className="mr-20">
-                  <div className="items-center flex gap-3">
+                  <div className="items-center flex gap-6">
                     <button className="relative" onClick={() => nav("/cart")}>
                       <img alt="cart" src={Cart} />
                       {order?.order?.length ? (
@@ -110,6 +112,7 @@ export default function Navigation() {
                         <img
                           alt="avatar"
                           className="rounded-full w-[50px] h-[50px] object-cover"
+                          src={auth?.user?.image ? auth?.user?.image : DefaultIMG}  
                         />
                       </button>
                     </MenuHandler>

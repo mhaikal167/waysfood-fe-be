@@ -11,6 +11,7 @@ module.exports = withMT({
     colors:{
       primary:"#FFC700",
       secondary:"#433434",
+      coklat:"#613D2B",
       cancel:"#E83939",
       success:"#78A85A"
     }

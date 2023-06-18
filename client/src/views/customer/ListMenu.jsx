@@ -10,24 +10,29 @@ export default function ListMenu({ auth }) {
   const { id } = useParams();
   const d = useDispatch();
   const [listMenu, setListMenu] = useState();
-  useEffect(() => {
-    d(getProductP(id));
-  }, [d, id]);
 
   const product = useSelector((state) => state.product);
   useEffect(() => {
     setListMenu(product?.product);
   }, [product?.product]);
+  const partner = useSelector((state) => state.partner);
 
+  const partnerID = partner?.partner.find((item) => item.fullname === id);
+  useEffect(() => {
+    d(getProductP(partnerID.id));
+  }, [d]);
+ 
   return (
     <>
       <div className=" p-12 mx-16">
         <Typography variant="h2" className="text-secondary font-avenir">
-          {product?.product[0]?.user.fullname},Menus
+          {partnerID?.fullname
+            ? partnerID?.fullname + ",Menus"
+            : "merchant tidak ditemukan"}
         </Typography>
         {product?.loading ? (
           <Typography>Loading ...</Typography>
-        ) : (
+        ) : listMenu?.length > 0 ? (
           <div className="flex mt-6 gap-16 flex-wrap">
             {listMenu?.map((item, idx) => {
               return (
@@ -45,7 +50,7 @@ export default function ListMenu({ auth }) {
                       {item.title}
                     </p>
                     <p className="font-abhava font-medium text-base text-red-400">
-                      Rp. {item.price}
+                     Rp. {item.price.toLocaleString("id-ID")}
                     </p>
                     <Button
                       className="py-1 mt-4 bg-primary text-black rounded-sm"
@@ -57,8 +62,10 @@ export default function ListMenu({ auth }) {
                             seller_id: item.user.id,
                             product_id: item.id,
                           };
-                          d(AddOrder(data, auth?.token));
-                          d(GetOrder(auth?.token));
+                          d(AddOrder(data, auth?.token))
+                          setTimeout(() => {
+                            d(GetOrder(auth?.token));
+                          },2000)
                         } else {
                           Swal.fire("Please Login");
                         }
@@ -71,6 +78,15 @@ export default function ListMenu({ auth }) {
               );
             })}
           </div>
+        ) : (
+          <>
+            <Typography
+              className="mt-10 font-avenir text-secondary"
+              variant="h2"
+            >
+              No Product ....
+            </Typography>
+          </>
         )}
       </div>
     </>

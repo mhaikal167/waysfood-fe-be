@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 	"strconv"
+	"time"
 	productdto "waysfood/dto/product"
 	resultdto "waysfood/dto/result"
 	"waysfood/models"
@@ -35,6 +36,23 @@ func (h *handlerProduct) FindProducts(c echo.Context) error {
 		Data:    Product,
 	})
 }
+func (h *handlerProduct) GetProductById(c echo.Context) error {
+	id, _ := strconv.Atoi(c.Param("id"))
+
+	Product, err := h.ProductRepository.GetProductById(id)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, resultdto.ErrorResult{
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+		})
+	}
+	return c.JSON(http.StatusOK, resultdto.SuccessResult{
+		Code:    http.StatusOK,
+		Message: "Get Product ID success",
+		Data:    Product,
+	})
+}
+
 func (h *handlerProduct) FindProductsPartner(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
 	Products, err := h.ProductRepository.FindProductsPartner(id)
@@ -43,8 +61,8 @@ func (h *handlerProduct) FindProductsPartner(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, resultdto.SuccessResult{
-		Code: http.StatusOK, 
-		Data: Products, 
+		Code:    http.StatusOK,
+		Data:    Products,
 		Message: "Get Product Partner Success",
 	})
 }
@@ -54,9 +72,20 @@ func (h *handlerProduct) CreateProduct(c echo.Context) error {
 
 	userLogin := c.Get("userLogin")
 	SellerID := userLogin.(jwt.MapClaims)["id"].(float64)
-
 	Price, _ := strconv.ParseInt(c.FormValue("price"), 10, 64)
+
+	var productIsMatch = false
+	var productId int
+	for !productIsMatch {
+		productId = int(time.Now().Unix())
+		productData, _ := h.ProductRepository.GetProductById(productId)
+		if productData.ID == 0 {
+			productIsMatch = true
+		}
+	}
+
 	request := productdto.CreateProductRequest{
+		ID:     productId,
 		Title:  c.FormValue("title"),
 		Image:  dataFile,
 		Price:  Price,
@@ -70,6 +99,7 @@ func (h *handlerProduct) CreateProduct(c echo.Context) error {
 	}
 
 	Products := models.Product{
+		ID:     request.ID,
 		Title:  request.Title,
 		Image:  request.Image,
 		Price:  request.Price,
@@ -81,5 +111,5 @@ func (h *handlerProduct) CreateProduct(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, resultdto.ErrorResult{Code: http.StatusInternalServerError, Message: err.Error()})
 	}
 
-	return c.JSON(http.StatusOK, resultdto.SuccessResult{Code: http.StatusOK, Data: data,Message: "Add Product Success"})
+	return c.JSON(http.StatusOK, resultdto.SuccessResult{Code: http.StatusOK, Data: data, Message: "Add Product Success"})
 }

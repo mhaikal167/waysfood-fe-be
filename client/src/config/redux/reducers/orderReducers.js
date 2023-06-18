@@ -27,6 +27,23 @@ export const orderReducers = (state = INITIAL_STATE_ORDER, action) => {
         loading:false ,
         error:payload
       };
+     case orderTypes.DELETE_ORDER:
+      return {
+        ...state,
+        loading: true,
+      };
+    case orderTypes.DELETE_ORDER_SUCCESS:
+      return {
+        ...state,
+        loading: false,
+        message:payload,
+      };
+    case orderTypes.DELETE_ORDER_FAILED:
+      return {
+        ...state,
+        loading:false,
+        error:payload
+      };
     default:
       return state;
   }

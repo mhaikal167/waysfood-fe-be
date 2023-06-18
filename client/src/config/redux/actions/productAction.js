@@ -90,8 +90,11 @@ export const addProducts = (data,token) => {
       
               Toast.fire({
                 icon: "success",
-                title: response?.data?.data?.message,
+                title: response?.data?.message,
               });
+              setTimeout(() => {
+                window.location.reload()
+            },3000)
         })
         .catch((error) => {
             dispatch(addProductFailed(error?.response?.data.message))

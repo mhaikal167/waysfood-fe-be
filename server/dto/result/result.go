@@ -1,12 +1,15 @@
 package resultdto
 
 type SuccessResult struct {
-	Code int `json:"code"`
-	Message string `json:"message"`
-	Data interface{} `json:"data"`
+	Code    int         `json:"code"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data"`
 }
-
-type ErrorResult struct {
-	Code int `json:"code"`
+type SuccessRequestResult struct {
+	Code    int    `json:"code"`
 	Message string `json:"message"`
-}	
+}
+type ErrorResult struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+}
