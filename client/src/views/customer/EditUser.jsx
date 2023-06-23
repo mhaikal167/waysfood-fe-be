@@ -1,4 +1,4 @@
-import { Button, Typography, Dialog, Card } from "@material-tailwind/react";
+import { Button, Typography, Dialog,Card } from "@material-tailwind/react";
 import Upload from "@Assets/images/upload.png";
 import { useEffect, useState, Fragment } from "react";
 import IconMap from "@Assets/images/map.png";
@@ -6,11 +6,9 @@ import { useDispatch } from "react-redux";
 import { updateUserInitiate } from "../../config/redux/actions/authAction";
 import MapModal from "@Components/Map";
 import { distance } from "@turf/turf";
-import { APILOC } from "../../config/api/api";
 
-export default function EditProfile({ auth }) {
+export default function EditUser({ auth }) {
   const [dataProfile, setDataProfile] = useState([]);
-  const [dataLocation, setDataLocation] = useState();
   const d = useDispatch();
   const style =
     "bg-[#d2d2d25b] py-2 rounded-md px-4 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500";
@@ -19,54 +17,28 @@ export default function EditProfile({ auth }) {
     setDataProfile(auth?.user);
   }, []);
 
-  const getLocation = async (lats, lngs) => {
-    await APILOC.get(`/reverse?format=json&lat=${lats}&lon=${lngs}`).then(
-      (response) => {
-        console.log(response, "ini response");
-        setDataLocation(response?.data?.display_name);
-      }
-    );
-  };
+  const mapCenter = { lat: -6.17511, lng: 106.865036 };
   const [openMap, setOpenMap] = useState(false);
-  const [lat, setLat] = useState();
-  const [lng, setLng] = useState();
-
-  const handleMapClick = (e) => {
-    const { lat, lng } = e.latlng;
-    setLat(lat);
-    setLng(lng);
+  const [selectedMap, setSelectedMap] = useState();
+  console.log(selectedMap);
+  const handleMap = (e) => {
+    const { lat, lng } = e;
+    setSelectedMap({ lat, lng });
   };
 
   const handleOpenMap = () => {
-    setOpenMap(true);
+    setOpenMap((prev) => !prev);
   };
-  const handleCloseMap = () => {
-    setOpenMap(false);
-  };
-  console.log(auth?.user.location, "ini location");
-  let latUser = auth?.user.location.split(",")[0];
-  let lngUser = auth?.user.location.split(",")[1];
-  useEffect(() => {
-    if (lat && lng) {
-      getLocation(lat, lng);
-    } else if (auth?.user.location) {
-      getLocation(parseInt(latUser), parseInt(lngUser));
-    }
-  }, [lat, lng]);
-
   const calculateDistance = (startLng, startLat, endLng, endLat) => {
-    const startPoint = [startLng, startLat];
-    const endPoint = [endLng, endLat];
-    const option = { units: "kilometers" };
-    const dist = distance(startPoint, endPoint, option);
-    return dist;
-  };
+    const startPoint = ([startLng, startLat])
+    const endPoint = ([endLng, endLat])
+    const option = { units: 'kilometers' };
+    const dist = distance(startPoint, endPoint, option)
+    return dist
+  }
 
-  const loc = `${lat}, ${lng}`;
-  const calculatedDistance = calculateDistance(
-    loc.split(",")[1],
-    loc.split(",")[0]
-  );
+  const loc = `${selectedMap?.lat}, ${selectedMap?.lng}`;
+  const calculatedDistance = calculateDistance(loc.split(",")[1], loc.split(",")[0])
   console.log(calculatedDistance.toFixed(2));
 
   const handleSubmit = (e) => {
@@ -91,15 +63,15 @@ export default function EditProfile({ auth }) {
         <Dialog
           size="sm"
           open={openMap}
-          handler={handleCloseMap}
+          handler={handleOpenMap}
           className="bg-transparent shadow-none"
         >
           <Card>
             <MapModal
-              selectedLat={ lat}
-              selectedLng={ lng}
-              handleMapClick={handleMapClick}
-            />
+            defaultCenter={mapCenter}
+            defaultZoom={13}
+            selectedMap={selectedMap}
+            handleMapClick={handleMap}/>
           </Card>
         </Dialog>
       </Fragment>
@@ -173,7 +145,7 @@ export default function EditProfile({ auth }) {
                     location: e.target.value,
                   }));
                 }}
-                value={dataLocation}
+                value={loc}
                 placeholder="Location"
               />
               <Button
@@ -195,7 +167,7 @@ export default function EditProfile({ auth }) {
           </div>
         </form>
       </div>
-      <MapModals />
+      <MapModals/>
     </>
   );
 }

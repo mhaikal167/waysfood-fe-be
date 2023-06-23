@@ -15,7 +15,7 @@ const GroupRes = ({data}) => {
       <div className="flex flex-col md:flex-row items-center gap-5 mt-10">
       {data?.length ? (
           <>
-            {data?.map((item, idx) => {
+            {data?.slice(0,4).map((item, idx) => {
               return (
                 <Card key={idx} className="p-4 border border-gray-200 h-[95px] w-[250px]">
                   <div className="flex flex-row items-center gap-5 mr-5">

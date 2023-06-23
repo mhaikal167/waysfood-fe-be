@@ -8,23 +8,14 @@ import {
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import MarkerMap from "@Assets/images/marker.png";
-import { useState } from "react";
 
-export default function Test() {
-  const [lat, setLat] = useState();
-  const [lng, setLng] = useState();
+export default function Map(props) {
+  const { handleMapClick, selectedLat, selectedLng } = props;
+
   const icon = L.icon({
     iconUrl: MarkerMap,
     iconSize: [38, 36],
   });
-
-  const handleMapClick = (e) => {
-    const { lat, lng } = e.latlng;
-    setLat(lat);
-    setLng(lng);
-    console.log("Latitude:", lat);
-    console.log("Longitude:", lng);
-  };
 
   function MapEvents() {
     useMapEvents({
@@ -48,9 +39,9 @@ export default function Test() {
             url="https://api.maptiler.com/maps/streets-v2/256/{z}/{x}/{y}.png?key=J77uFt2uiTPaxmyhQdN4"
           />
           <MapEvents />
-          {lat && lng && (
+          {selectedLat && selectedLng && (
             <Marker
-              position={[lat, lng]}
+              position={[selectedLat, selectedLng]}
               draggable={true}
               animate={true}
               icon={icon}

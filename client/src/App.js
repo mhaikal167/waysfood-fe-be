@@ -20,16 +20,18 @@ function App() {
       <Routes>
         <Route element={<PublicRoute auth={auth} />}>
           <Route path="/" element={<E.Home />} />
+          <Route path="/test" element={<E.Test />} />
           <Route path="/menu-list/:id" element={<E.ListMenu auth={auth}/>}/>
         </Route>
         <Route element={<PrivateRoutePartner auth={auth} />}>
-          <Route path="/partner" element={<E.HomePartner />} />
+          <Route path="/partner" element={<E.HomePartner auth={auth} />} />
           <Route path="/add-product" element={<E.AddProduct auth={auth}/>} />
           <Route path="/profile-partner" element={<E.ProfilePartner auth={auth}/>}/>
           <Route path="/edit-partner" element={<E.EditPartner auth={auth}/>}/>
         </Route>
         <Route element={<PrivateRouteUser auth={auth} />}>
           <Route path="/cart" element={<E.Cart auth={auth}/>} />
+          <Route path="/profile-user" element={<E.ProfileUser auth={auth}/>}/>
           <Route path="/edit-profile" element={<E.EditPartner auth={auth}/>}/>
         </Route>
       </Routes>

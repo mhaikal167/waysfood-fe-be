@@ -1,17 +1,24 @@
-import { Typography, Card, Button } from "@material-tailwind/react";
+import { Typography, Card, Button, Dialog } from "@material-tailwind/react";
 import { useDispatch, useSelector } from "react-redux";
 import IconMap from "@Assets/images/map.png";
 import TrashCan from "@Assets/images/trash.png";
 import {
   AddOrder,
+  DeleteAllOrder,
   DeleteOrder,
   GetOrder,
 } from "../../config/redux/actions/orderAction";
+import { API, APILOC } from "../../config/api/api";
+import Swal from "sweetalert2";
+import { useEffect, useState, Fragment } from "react";
+import { distance } from "@turf/turf";
+import MapModal from "@Components/Map";
+import { useNavigate } from "react-router-dom";
 
 export default function Cart({ auth }) {
   const order = useSelector((state) => state.order);
-  console.log(auth?.user?.id);
   const d = useDispatch();
+  const nav = useNavigate()
   const total = order.order.map((item) => {
     return item.qty * item.product.price;
   });
@@ -26,10 +33,175 @@ export default function Cart({ auth }) {
     (accumulator, currentValue) => accumulator + currentValue,
     0
   );
-  // const calculateOngkir = (order.order.)
+  // const mapCenter = { lat: -6.17511, lng: 106.865036 };
+  const [openMap, setOpenMap] = useState(false);
+  const [dataLocation, setDataLocation] = useState();
+  const getLocation = async (lats, lngs) => {
+    await APILOC.get(`/reverse?format=json&lat=${lats}&lon=${lngs}`).then(
+      (response) => {
+        console.log(response, "ini response");
+        setDataLocation(response?.data?.display_name);
+      }
+    );
+  };
+  const [lat, setLat] = useState();
+  const [lng, setLng] = useState();
+  const handleMapClick = (e) => {
+    const { lat, lng } = e.latlng;
+    setLat(lat);
+    setLng(lng);
+  };
+
+  const handleOpenMap = () => {
+    setOpenMap((prev) => !prev);
+  };
+  let latUser = auth?.user.location.split(",")[0];
+  let lngUser = auth?.user.location.split(",")[1];
+  useEffect(() => {
+    if (lat && lng) {
+      getLocation(lat, lng);
+      d(DeleteAllOrder(auth?.token));
+    } else if (auth?.user.location) {
+      getLocation(parseInt(latUser), parseInt(lngUser));
+    }
+  }, [lat, lng]);
+  const calculateDistance = (startLng, startLat, endLng, endLat) => {
+    const startPoint = [startLng, startLat];
+    const endPoint = [endLng, endLat];
+    const option = { units: "kilometers" };
+    const dist = distance(startPoint, endPoint, option);
+    return dist;
+  };
+
+  const loc = `${lat}, ${lng}`;
+  const locPart = order?.order[0]?.seller?.location;
+  const [dist, setDist] = useState();
+  useEffect(() => {
+    if (auth?.user.location) {
+      setDist(
+        calculateDistance(
+          lngUser,
+          latUser,
+          locPart?.split(",")[1],
+          locPart?.split(",")[0]
+        )
+      );
+    } else {
+      setDist(
+        calculateDistance(
+          loc?.split(",")[1],
+          loc?.split(",")[0],
+          locPart?.split(",")[1],
+          locPart?.split(",")[0]
+        )
+      );
+    }
+  }, []);
+
+  const distances = dist?.toFixed(2);
+  const ongkir = 4000;
+  const totalOngkir = distances * ongkir;
+  const totalOrder = subtotal + totalOngkir;
+  console.log(totalOrder, "ini order");
+  useEffect(() => {
+    const midtransScriptUrl = "https://app.sandbox.midtrans.com/snap/snap.js";
+    const midtransClientKey = process.env.REACT_APP_MIDTRANS_CLIENT_KEY;
+
+    let scriptTag = document.createElement("script");
+    scriptTag.src = midtransScriptUrl;
+
+    scriptTag.setAttribute("data-client-key", midtransClientKey);
+
+    document.body.appendChild(scriptTag);
+    return () => {
+      document.body.removeChild(scriptTag);
+    };
+  }, []);
+  const handlePay = async () => {
+    if (totalOrder === NaN) {
+      Swal.fire("please entry your location");
+    } else {
+      const config = {
+        headers: {
+          "Content-type": "application/json",
+          Authorization: `Bearer ${auth?.token}`,
+        },
+      };
+      const dataOrder = {
+        totalPrice: totalOrder,
+        seller_id: order?.order[0]?.seller_id,
+      };
+      const body = JSON.stringify(dataOrder);
+      const response = await API.post("/transaction", body, config);
+      console.log(response);
+      const token = response.data.data.token;
+
+      window.snap.pay(token, {
+        onSuccess: function (result) {
+          d(DeleteAllOrder(auth?.token));
+          Swal.fire("Paid Success", result, "success");
+          setTimeout(()=>{
+            nav("/")
+          },1000)
+        },
+        onPending: function (result) {
+          d(DeleteAllOrder(auth?.token));
+          Swal.fire("Paid Success", result, "success");
+          setTimeout(()=>{
+            nav("/")
+          },1000)
+        },
+        onError: function (result) {
+          Swal.fire("Cancelled", result, "error");
+        },
+        onClose: function () {
+          Swal.fire("Cancelled", "Your Book has been canceled :)", "error");
+        },
+      });
+      d(DeleteAllOrder(auth?.token));
+    }
+  };
+
+  const handleOrder = () => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "To purchase this order?",
+      icon: "info",
+      showCancelButton: true,
+      reverseButtons: true,
+    }).then((result) => {
+      if (result.isConfirmed) {
+        handlePay();
+      } else if (result.dismiss === Swal.DismissReason.cancel) {
+        Swal.fire("Cancelled", "Your Pay has Cancelled :)", "error");
+      }
+    });
+  };
+
+  const MapModals = () => {
+    return (
+      <Fragment>
+        <Dialog
+          size="sm"
+          open={openMap}
+          handler={handleOpenMap}
+          className="bg-transparent shadow-none"
+        >
+          <Card>
+            <MapModal
+              selectedLat={lat}
+              selectedLng={lng}
+              handleMapClick={handleMapClick}
+            />
+          </Card>
+        </Dialog>
+      </Fragment>
+    );
+  };
 
   return (
     <>
+      <MapModals />
       <div className="p-20">
         <Typography
           className="text-black font-abhava font-extrabold text-4xl"
@@ -40,18 +212,19 @@ export default function Cart({ auth }) {
         <Typography className="text-coklat font-avenir text-lg mt-5">
           Delivery Location
         </Typography>
-        <div className="grid grid-cols-12 gap-4 mt-2 mb-5">
+        <div className="grid grid-cols-12 gap-4">
           <input
-            className="bg-white py-1 rounded-md px-4 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 col-span-10"
+            className={`py-2 rounded-md px-4 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 col-span-10`}
             type="text"
+            value={dataLocation ? dataLocation : "Please Select the Map"}
             placeholder="Location"
           />
           <Button
-            className="text-white bg-secondary col-span-2 w-full flex items-center justify-center gap-5"
-            type="submit"
+            className="text-white bg-secondary col-span-2 flex items-center justify-center gap-5"
+            onClick={handleOpenMap}
           >
             Select On Map
-            <img src={IconMap} alt="iconmap" className="hidden md:block" />
+            <img src={IconMap} alt="iconmap" />
           </Button>
         </div>
         <Typography className="text-coklat font-avenir text-lg mt-5 mb-2">
@@ -99,7 +272,7 @@ export default function Cart({ auth }) {
                                         d(AddOrder(data, auth?.token));
                                         setTimeout(() => {
                                           d(GetOrder(auth?.token));
-                                        }, 1000);
+                                        }, 500);
                                       }
                                     }}
                                     className="px-4"
@@ -123,7 +296,7 @@ export default function Cart({ auth }) {
                                       d(AddOrder(data, auth?.token));
                                       setTimeout(() => {
                                         d(GetOrder(auth?.token));
-                                      }, 1000);
+                                      }, 500);
                                     }}
                                     className="px-4"
                                   >
@@ -142,12 +315,15 @@ export default function Cart({ auth }) {
                                     item.product.price * item.qty
                                   ).toLocaleString("id-ID")}
                                 </p>
-                                <button className=" items-end m-auto mt-2" onClick={() => {
-                                  d(DeleteOrder(item.id,auth?.token))
-                                  setTimeout(() => {
-                                    d(GetOrder(auth?.token))
-                                  },1000)
-                                   }}>
+                                <button
+                                  className=" items-end m-auto mt-2"
+                                  onClick={() => {
+                                    d(DeleteOrder(item.id, auth?.token));
+                                    setTimeout(() => {
+                                      d(GetOrder(auth?.token));
+                                    }, 1000);
+                                  }}
+                                >
                                   <img
                                     src={TrashCan}
                                     alt="products"
@@ -181,7 +357,7 @@ export default function Cart({ auth }) {
               <div className=" flex justify-between mb-3">
                 <p className="font-avenir">Ongkir</p>
                 <p className="font-avenir text-red-400">
-                   FREE
+                  Rp.{totalOngkir.toLocaleString("id-ID")}
                 </p>
               </div>
             </div>
@@ -189,10 +365,17 @@ export default function Cart({ auth }) {
               <div className=" flex justify-between mb-3">
                 <p className="font-avenir text-red-400 font-bold">Total</p>
                 <p className="font-avenir text-red-400">
-                  Rp. {subtotal ? subtotal.toLocaleString("id-ID") : 0}
+                  Rp. {totalOrder ? totalOrder?.toLocaleString("id-ID") : 0}
                 </p>
               </div>
             </div>
+            <Button
+              className="text-white bg-secondary col-span-2 w-full flex items-center justify-center gap-5"
+              type="submit"
+              onClick={handleOrder}
+            >
+              Order
+            </Button>
           </div>
         </div>
       </div>

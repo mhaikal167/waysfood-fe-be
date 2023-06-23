@@ -1,6 +1,9 @@
 import axios from "axios";
 
 export const API = axios.create({
-  baseURL : "http://localhost:5000/api/v1"  
+  baseURL : "https://waysfood.fly.dev/api/v1"  
 })
 
+export const APILOC = axios.create({
+  baseURL : "https://nominatim.openstreetmap.org"
+})

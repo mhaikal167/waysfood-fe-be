@@ -3,6 +3,7 @@ export { default as Home } from "./customer/Home";
 export { default as Test } from "./customer/Test";
 export { default as ListMenu } from "./customer/ListMenu";
 export { default as Cart } from "./customer/Cart";
+export  {default as ProfileUser} from "./customer/Profile";
 // Element Home
 export { default as HomePartner } from "./partner/HomePartner";
 export { default as AddProduct } from "./partner/AddProduct";

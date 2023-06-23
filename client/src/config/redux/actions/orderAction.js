@@ -125,3 +125,35 @@ export const DeleteOrder = (id,token) => {
         })
     }
 }
+
+const deleteAllOrder = () => ({
+    type:orderTypes.DELETE_ALL_ORDER
+})
+
+const deleteAllOrderSuccess = (payload) => ({
+    type:orderTypes.DELETE_ALL_ORDER_SUCCESS,
+    payload:payload
+})
+
+const deleteAllOrderFailed = (error) => ({
+    type:orderTypes.DELETE_ALL_ORDER_FAILED,
+    payload:error,
+})
+
+export const DeleteAllOrder = (token) => {
+    return function(dispatch){
+        dispatch(deleteAllOrder)
+        let config = {
+            headers:{
+                Authorization: `Bearer ${token}`
+            }
+        }
+        API.delete(`/delete-all`,config)
+        .then((response) =>{
+            dispatch(deleteAllOrderSuccess(response.data.message))
+        })
+        .catch((error) => {
+            dispatch(deleteAllOrderFailed(error.response.data.message))
+        })
+    }
+}

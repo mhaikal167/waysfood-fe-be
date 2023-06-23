@@ -1,16 +1,27 @@
 import { Typography, CardBody, Card } from "@material-tailwind/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { GetTransPartner } from "../../config/redux/actions/transactionAction";
+import { useDispatch, useSelector } from "react-redux";
 
-export default function HomePartner() {
+export default function HomePartner({ auth }) {
   const [dataTable, setDataTable] = useState([]);
+  const trans = useSelector((state) => state.trans);
+  const d = useDispatch();
   const TABLE_ROWS = [
     "No",
     "Name",
-    "Address",
+    "Total Price",
     "Product Order",
     "Status",
     "Action",
   ];
+  useEffect(() => {
+    d(GetTransPartner(auth?.token));
+  }, []);
+
+  useEffect(() => {
+    setDataTable(trans?.transaction);
+  }, [trans?.transaction]);
   return (
     <>
       <div className="p-20">
@@ -42,33 +53,43 @@ export default function HomePartner() {
               </thead>
               <tbody>
                 {dataTable.length ? (
-                  <tr>
-                    <td className="px-2 py-1 border border-secondary">
-                      <Typography variant="p">1</Typography>
-                    </td>
-                    <td className="px-2 border border-secondary">
-                      <Typography>Sugeng No pants</Typography>
-                    </td>
-                    <td className="px-2 border border-secondary">
-                      <Typography>Cileungsi</Typography>
-                    </td>
-                    <td className="px-2 border border-secondary w-[200px]">
-                      <div className="w-[160px]">
-                        <Typography className="truncate">
-                          Paket Geprek,paket kepulauan
-                        </Typography>
-                      </div>
-                    </td>
-                    <td className=" border border-secondary px-2 font-avenir">
-                      <p className={`text-success`}>Success</p>
-                    </td>
-                    <td className="px-2 border border-secondary">F</td>
-                  </tr>
+                  dataTable.map((item, idx) => {
+                    return (
+                      <>
+                        <tr>
+                          <td className="px-2 py-1 border border-secondary">
+                            <Typography variant="p">{idx + 1}</Typography>
+                          </td>
+                          <td className="px-2 border border-secondary">
+                            <Typography>{item?.buyer?.fullname}</Typography>
+                          </td>
+                          <td className="px-2 border border-secondary">
+                            <Typography>Rp.{item?.totalPrice.toLocaleString("id-ID")}</Typography>
+                          </td>
+                          <td className="px-2 border border-secondary w-[200px]">
+                            <div className="w-[160px]">
+                              {item.carts.map((product, idx) => {
+                                return (
+                                  <>
+                                    <Typography className="truncate" key={idx}>
+                                      {product.product.title}
+                                    </Typography>
+                                  </>
+                                );
+                              })}
+                            </div>
+                          </td>
+                          <td className=" border border-secondary px-2 font-avenir">
+                            <p className={item?.status === "success" ? `text-success` : item?.status === "pending" ? `text-primary` : "text-cancel" }>{item?.status}</p>
+                          </td>
+                          <td className="px-2 border border-secondary">F</td>
+                        </tr>
+                      </>
+                    );
+                  })
                 ) : (
                   <>
-                  <p className="mx-6">
-                  No data ...
-                  </p>
+                    <p className="mx-6">No data ...</p>
                   </>
                 )}
               </tbody>

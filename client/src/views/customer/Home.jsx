@@ -12,14 +12,14 @@ function Home() {
 
  const partner = useSelector((state) => state.partner)
  const [dataPartner ,setDataPartner] = useState()
-
+ console.log(process.env,"ini ENV");
  useEffect(() => {
   setDataPartner(partner?.partner)
  },[partner?.partner])
 
  return ( 
     <>
-      <div className=" bg-primary text-center text-secondary flex justify-center items-center gap-6 font-avenir py-5 ">
+      <div className=" bg-primary text-center text-secondary flex justify-center items-center gap-6 font-avenir py-5  ">
         <div className="w-1/2">
           <Typography variant="h2" className="">Are You Hungry?</Typography>
           <Typography variant="h2">Express Home Delivery</Typography>
@@ -34,7 +34,7 @@ function Home() {
             </div>
           </div>
         </div>
-        <img src={LogoHome} alt="logo" className="hidden lg:block" />
+        <img src={LogoHome} alt="logo" className="hidden lg:block rotate" />
       </div>
       
       <GroupRes data={dataPartner}/>

@@ -5,17 +5,19 @@ import { authReducer } from "./authReducers";
 import { productReducer } from "./productReducers";
 import { partnerReducer } from "./partnertReducers";
 import { orderReducers } from "./orderReducers";
+import { transReducers } from "./transactionReducers";
 
 const persistConfig = {
     key :"root",
     storage,
-    whitelist:["auth","product","partner","order"]
+    whitelist:["auth","product","partner","order","transaction"]
 }
 const reducers = combineReducers({
     auth : authReducer,
     product: productReducer,
     partner: partnerReducer,
     order: orderReducers,
+    trans: transReducers,
 })
 
 export default persistReducer(persistConfig,reducers)

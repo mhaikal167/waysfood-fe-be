@@ -120,7 +120,7 @@ export default function Navigation() {
                   <MenuList>
                     <MenuItem
                       className="flex items-center justify-between pr-12"
-                      onClick={() => nav("/profile")}
+                      onClick={() => nav("/profile-user")}
                     >
                       <img src={Profile} className="w-[30px]" alt="logout" />
                       Profile
