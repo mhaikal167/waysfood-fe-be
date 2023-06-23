@@ -58,7 +58,6 @@ export default function Cart({ auth }) {
   useEffect(() => {
     if (dataDir) {
       getLocation(parseFloat(dataDir?.split(",")[0]),parseFloat(dataDir?.split(",")[1]));
-      d(DeleteAllOrder(auth?.token));
     }
   }, [dataDir]);
   const calculateDistance = (startLng, startLat, endLng, endLat) => {
