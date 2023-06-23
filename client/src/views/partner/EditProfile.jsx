@@ -5,7 +5,6 @@ import IconMap from "@Assets/images/map.png";
 import { useDispatch } from "react-redux";
 import { updateUserInitiate } from "../../config/redux/actions/authAction";
 import MapModal from "@Components/Map";
-import { distance } from "@turf/turf";
 import { APILOC } from "../../config/api/api";
 
 export default function EditProfile({ auth }) {
@@ -19,8 +18,8 @@ export default function EditProfile({ auth }) {
     setDataProfile(auth?.user);
   }, []);
 
-  const getLocation = async (lats, lngs) => {
-    await APILOC.get(`/reverse?format=json&lat=${lats}&lon=${lngs}`).then(
+  const getLocation = (lats, lngs) => {
+    APILOC.get(`/reverse?format=json&lat=${lats}&lon=${lngs}`).then(
       (response) => {
         console.log(response, "ini response");
         setDataLocation(response?.data?.display_name);
@@ -43,31 +42,24 @@ export default function EditProfile({ auth }) {
   const handleCloseMap = () => {
     setOpenMap(false);
   };
-  console.log(auth?.user.location, "ini location");
-  let latUser = auth?.user.location.split(",")[0];
-  let lngUser = auth?.user.location.split(",")[1];
+console.log(auth?.user.location.split(",")[0],"lat");
+const latUser = auth?.user.location.split(",")[0]
+const lngUser = auth?.user.location.split(",")[1]
   useEffect(() => {
     if (lat && lng) {
       getLocation(lat, lng);
-    } else if (auth?.user.location) {
-      getLocation(parseInt(latUser), parseInt(lngUser));
+      console.log("engga ini yg terender");
+    } else if(latUser && lngUser){
+      getLocation(
+        parseFloat(latUser),
+        parseFloat(lngUser)
+      );
+      console.log("ini terrednder");
     }
-  }, [lat, lng]);
-
-  const calculateDistance = (startLng, startLat, endLng, endLat) => {
-    const startPoint = [startLng, startLat];
-    const endPoint = [endLng, endLat];
-    const option = { units: "kilometers" };
-    const dist = distance(startPoint, endPoint, option);
-    return dist;
-  };
+  }, [lat, lng, auth?.user]);
 
   const loc = `${lat}, ${lng}`;
-  const calculatedDistance = calculateDistance(
-    loc.split(",")[1],
-    loc.split(",")[0]
-  );
-  console.log(calculatedDistance.toFixed(2));
+  console.log(loc,"ini loxxc");
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -96,8 +88,8 @@ export default function EditProfile({ auth }) {
         >
           <Card>
             <MapModal
-              selectedLat={ lat}
-              selectedLng={ lng}
+              selectedLat={lat}
+              selectedLng={lng}
               handleMapClick={handleMapClick}
             />
           </Card>

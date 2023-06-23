@@ -1,24 +1,24 @@
-import { Typography, Card, Button, Dialog } from "@material-tailwind/react";
-import { useDispatch, useSelector } from "react-redux";
 import IconMap from "@Assets/images/map.png";
 import TrashCan from "@Assets/images/trash.png";
+import MapModal from "@Components/Map";
+import { Button, Card, Dialog, Typography } from "@material-tailwind/react";
+import { distance } from "@turf/turf";
+import { Fragment, useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
+import { API, APILOC } from "../../config/api/api";
 import {
   AddOrder,
   DeleteAllOrder,
   DeleteOrder,
   GetOrder,
 } from "../../config/redux/actions/orderAction";
-import { API, APILOC } from "../../config/api/api";
-import Swal from "sweetalert2";
-import { useEffect, useState, Fragment } from "react";
-import { distance } from "@turf/turf";
-import MapModal from "@Components/Map";
-import { useNavigate } from "react-router-dom";
 
 export default function Cart({ auth }) {
   const order = useSelector((state) => state.order);
   const d = useDispatch();
-  const nav = useNavigate()
+  const nav = useNavigate();
   const total = order.order.map((item) => {
     return item.qty * item.product.price;
   });
@@ -36,6 +36,7 @@ export default function Cart({ auth }) {
   // const mapCenter = { lat: -6.17511, lng: 106.865036 };
   const [openMap, setOpenMap] = useState(false);
   const [dataLocation, setDataLocation] = useState();
+  const [dataDir, setDataDir] = useState(auth?.user.location);
   const getLocation = async (lats, lngs) => {
     await APILOC.get(`/reverse?format=json&lat=${lats}&lon=${lngs}`).then(
       (response) => {
@@ -44,27 +45,22 @@ export default function Cart({ auth }) {
       }
     );
   };
-  const [lat, setLat] = useState();
-  const [lng, setLng] = useState();
   const handleMapClick = (e) => {
     const { lat, lng } = e.latlng;
-    setLat(lat);
-    setLng(lng);
+    let location = `${lat},${lng}`;
+    setDataDir(location);
   };
-
+  console.log(dataDir, "inidatar");
   const handleOpenMap = () => {
     setOpenMap((prev) => !prev);
   };
-  let latUser = auth?.user.location.split(",")[0];
-  let lngUser = auth?.user.location.split(",")[1];
+
   useEffect(() => {
-    if (lat && lng) {
-      getLocation(lat, lng);
+    if (dataDir) {
+      getLocation(parseFloat(dataDir?.split(",")[0]),parseFloat(dataDir?.split(",")[1]));
       d(DeleteAllOrder(auth?.token));
-    } else if (auth?.user.location) {
-      getLocation(parseInt(latUser), parseInt(lngUser));
     }
-  }, [lat, lng]);
+  }, [dataDir]);
   const calculateDistance = (startLng, startLat, endLng, endLat) => {
     const startPoint = [startLng, startLat];
     const endPoint = [endLng, endLat];
@@ -73,36 +69,18 @@ export default function Cart({ auth }) {
     return dist;
   };
 
-  const loc = `${lat}, ${lng}`;
   const locPart = order?.order[0]?.seller?.location;
-  const [dist, setDist] = useState();
-  useEffect(() => {
-    if (auth?.user.location) {
-      setDist(
-        calculateDistance(
-          lngUser,
-          latUser,
-          locPart?.split(",")[1],
-          locPart?.split(",")[0]
-        )
-      );
-    } else {
-      setDist(
-        calculateDistance(
-          loc?.split(",")[1],
-          loc?.split(",")[0],
-          locPart?.split(",")[1],
-          locPart?.split(",")[0]
-        )
-      );
-    }
-  }, []);
-
-  const distances = dist?.toFixed(2);
+  const calculatedDistance = calculateDistance(
+    dataDir?.split(",")[1],
+    dataDir?.split(",")[0],
+    locPart?.split(",")[1],
+    locPart?.split(",")[0]
+  );
+  const distances = calculatedDistance?.toFixed(2);
   const ongkir = 4000;
   const totalOngkir = distances * ongkir;
   const totalOrder = subtotal + totalOngkir;
-  console.log(totalOrder, "ini order");
+
   useEffect(() => {
     const midtransScriptUrl = "https://app.sandbox.midtrans.com/snap/snap.js";
     const midtransClientKey = process.env.REACT_APP_MIDTRANS_CLIENT_KEY;
@@ -140,16 +118,16 @@ export default function Cart({ auth }) {
         onSuccess: function (result) {
           d(DeleteAllOrder(auth?.token));
           Swal.fire("Paid Success", result, "success");
-          setTimeout(()=>{
-            nav("/")
-          },1000)
+          setTimeout(() => {
+            nav("/");
+          }, 1000);
         },
         onPending: function (result) {
           d(DeleteAllOrder(auth?.token));
           Swal.fire("Paid Success", result, "success");
-          setTimeout(()=>{
-            nav("/")
-          },1000)
+          setTimeout(() => {
+            nav("/");
+          }, 1000);
         },
         onError: function (result) {
           Swal.fire("Cancelled", result, "error");
@@ -189,8 +167,8 @@ export default function Cart({ auth }) {
         >
           <Card>
             <MapModal
-              selectedLat={lat}
-              selectedLng={lng}
+              selectedLat={dataDir?.split(",")[0]}
+              selectedLng={dataDir?.split(",")[1]}
               handleMapClick={handleMapClick}
             />
           </Card>
